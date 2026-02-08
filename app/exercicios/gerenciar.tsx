@@ -173,31 +173,21 @@ export default function GerenciarExercicio() {
           Visualizar Historico de Carga
         </Button>
 
-        {/* <FlatList
-          data={series}
-          keyExtractor={(item) => item.index}
-          renderItem={({ item }) => <ProducaoItem item={item} modoSecundario={true} onPress={() => abrirModalEditar(item)} onDelete={() => {
-            setIdProdExcluir(item.id)
-            setModalExcluir(true);
-          }}/>}
-          showsVerticalScrollIndicator={false}
-          numColumns={1}
-          ListHeaderComponent={Header}
-          ListFooterComponent={Footer}
-          contentContainerStyle={{paddingHorizontal: 20, flexGrow: 1, gap:16}}
-          ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
-        /> */}
-
-        <View style={{flexGrow:1, gap: 16}}>
-          <View style={{flexDirection:"row", alignItems:"center" , gap: 10, backgroundColor: myTheme.colors.surface, height: 50, width: "100%", borderRadius: 10, padding: 8, outlineWidth: 1, outlineColor:myTheme.colors.onSurfaceVariant}}>
+        <View style={{flexGrow:1, gap: 12}}>
+          <Text variant="headlineLarge" style={{marginBottom:-10}} >
+            Series
+          </Text>
+          <View style={styles.series}>
             <Text variant="bodyMedium">
               Rep.
             </Text>
             <TextInput
+              keyboardType="decimal-pad"
               mode="outlined"
               value={nome}
               onChangeText={nome => setNome(nome)}
-              style={{ backgroundColor: myTheme.colors.background, borderRadius: 16, height: 5, width:50 }}
+              style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
+              outlineStyle={{borderRadius:15, borderWidth:2}}
             />
 
             <Text variant="bodyMedium">
@@ -205,16 +195,19 @@ export default function GerenciarExercicio() {
             </Text>
             <TextInput
               mode="outlined"
+              keyboardType="decimal-pad"
               value={nome}
               onChangeText={nome => setNome(nome)}
-              style={{ backgroundColor: myTheme.colors.background, borderRadius: 16, height: 5, width:50 }}
+              style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
+              outlineStyle={{borderRadius:15, borderWidth:2}}
             />
 
             <View style={{ 
               flex: 1, 
-              flexDirection: 'row', 
-              justifyContent: 'flex-end',
-              gap: 0 
+              flexDirection: "row", 
+              justifyContent: "flex-end",
+              gap: 0,
+              marginRight:-5
             }}>
               <TouchableRipple
                 onPress={() => { /* função copiar */ }}
@@ -224,8 +217,8 @@ export default function GerenciarExercicio() {
                 <View style={{ 
                   width: 40, 
                   height: 40, 
-                  justifyContent: 'center', 
-                  alignItems: 'center' 
+                  justifyContent: "center", 
+                  alignItems: "center" 
                 }}>
                   <Lucide name="copy" size={24} color={myTheme.colors.tertiary} />
                 </View>
@@ -239,8 +232,8 @@ export default function GerenciarExercicio() {
                 <View style={{ 
                   width: 40, 
                   height: 40, 
-                  justifyContent: 'center', 
-                  alignItems: 'center' 
+                  justifyContent: "center", 
+                  alignItems: "center" 
                 }}>
                   <Lucide name="trash-2" size={24} color={myTheme.colors.error} />
                 </View>
@@ -248,27 +241,6 @@ export default function GerenciarExercicio() {
             </View>
           </View>
 
-        </View>
-
-        <View style={[styles.footerContainer, {paddingBottom: insets.bottom+16}]}>
-          <Button 
-            mode="contained" 
-            onPress={() => router.back()} 
-            style={styles.button}
-            buttonColor= {myTheme.colors.secondary}
-            textColor={myTheme.colors.onSurface}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            mode="contained" 
-            onPress={handleEditarAdicionar} 
-            style={styles.button}
-            disabled={nome.trim() === "" || series.length === 0}
-          >
-            {modoEdicao ? "Salvar" : "Adicionar"}
-          </Button>
-          
         </View>
 
         <Portal>
@@ -309,6 +281,28 @@ export default function GerenciarExercicio() {
           </Modal>
         </Portal>
       </ScrollView>
+
+      <View style={[styles.footerContainer, {paddingBottom: insets.bottom+16}]}>
+          <Button 
+            mode="contained" 
+            onPress={() => router.back()} 
+            style={styles.button}
+            buttonColor= {myTheme.colors.secondary}
+            textColor={myTheme.colors.onSurface}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            mode="contained" 
+            onPress={handleEditarAdicionar} 
+            textColor={myTheme.colors.onSurface}
+            style={styles.button}
+            // disabled={nome.trim() === "" || series.length === 0}
+          >
+            {modoEdicao ? "Salvar" : "Adicionar"}
+          </Button>
+          
+        </View>
       
     </View>
   );
@@ -324,6 +318,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
     marginTop: 16,
+    paddingHorizontal: 20,
   },
   button: {
     borderRadius: 16,
@@ -431,4 +426,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 18,
   },
+  series: {
+    flexDirection:"row",
+    alignItems:"center",
+    gap: 10,
+    backgroundColor:myTheme.colors.surface,
+    height: 50,
+    width: "100%",
+    borderRadius: 10,
+    padding: 8,
+    outlineWidth: 1,
+    outlineColor:myTheme.colors.onSurfaceVariant
+  }
 });

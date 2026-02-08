@@ -45,7 +45,7 @@ export default function RootLayout() {
       <ExercicioProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="exercicios/gerenciar" options={{ headerShown: false }} />
         </Stack>
       </ExercicioProvider>
     </PaperProvider>

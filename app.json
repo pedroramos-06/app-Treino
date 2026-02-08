@@ -4,6 +4,7 @@
     "slug": "app-treino",
     "version": "1.0.0",
     "orientation": "portrait",
+    "backgroundColor": "#16161a",
     "icon": "./assets/images/icon.png",
     "scheme": "apptreino",
     "userInterfaceStyle": "automatic",
