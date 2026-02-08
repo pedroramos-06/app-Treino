@@ -235,11 +235,18 @@ export default function GerenciarExercicio() {
                   justifyContent: "center", 
                   alignItems: "center" 
                 }}>
-                  <Lucide name="trash-2" size={24} color={myTheme.colors.error} />
+                  <Lucide name="circle-x" size={24} color={myTheme.colors.error} />
                 </View>
               </TouchableRipple>
             </View>
           </View>
+          <Button
+            mode="outlined"
+            onPress={() => {}}
+            style={{outlineColor:myTheme.colors.onSurfaceVariant, outlineWidth:1, borderRadius:10, height:50}}
+          >
+            <Lucide name="plus" size={24} color={myTheme.colors.primary} />
+          </Button>
 
         </View>
 
