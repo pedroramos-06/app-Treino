@@ -1,7 +1,6 @@
-import { View, StyleSheet, Image, FlatList, ScrollView } from "react-native";
+import { View, StyleSheet, Image, ScrollView } from "react-native";
 import myTheme from "@/theme/theme";
 import {
-  FAB,
   Appbar,
   TextInput,
   Text,
@@ -17,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker"
 import { useEffect, useState } from "react";
 import { Exercicio, Serie, useExercicios } from "@/contexts/ExercicioContext";
+import { format } from "date-fns";
 
 export default function GerenciarExercicio() {
   const router = useRouter();
@@ -36,13 +36,51 @@ export default function GerenciarExercicio() {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
+  const updateSerie = (index: number, campo: keyof Serie, valor: string) => {
+    const novasSeries = [...series];
+    novasSeries[index] = { ...novasSeries[index], [campo]: valor };
+    setSeries(novasSeries);
+  };
+
+  const adicionarSerie = () => {
+    setSeries([...series, { repeticoes: "", carga: "" } as any]);
+  };
+
+  const copiarSerie = (index: number) => {
+    const novaSerie = { ...series[index] };
+    setSeries([...series, novaSerie]);
+  };
+
+  const removerSerie = (index: number) => {
+    setSeries(series.filter((_, i) => i !== index));
+  };
+
   const handleEditarAdicionar = () => {
+    const seriesFormatadas = series.map(s => ({
+      ...s,
+      repeticoes: parseInt(s.repeticoes.toString()) || 0,
+      carga: parseFloat(s.carga.toString().replace(',', '.')) || 0 
+    }));
+
+    let historicoAtualizado = modoEdicao ? [...exercicio!.historico] : [{data: format(new Date(), "dd/MM/yyyy"),series: seriesFormatadas}];
+
+    if (modoEdicao) {
+      const ultimoRegistro = historicoAtualizado[0];
+
+      if (JSON.stringify(seriesFormatadas) !== JSON.stringify(ultimoRegistro?.series)) {
+        historicoAtualizado.unshift({
+          data: format(new Date(), "dd/MM/yyyy"),
+          series: seriesFormatadas
+        });
+      }
+    }
+
     const novoExercicio: Exercicio = {
       id: modoEdicao ? exercicio!.id : new Date().getTime().toString(),
       nome: nome,
       imagem: imagem ? imagem : modoEdicao ? exercicio!.imagem : null,
-      series: series,
-      historico: modoEdicao ? exercicio!.historico : []
+      series: seriesFormatadas,
+      historico: historicoAtualizado
     }
 
     if(modoEdicao){
@@ -137,7 +175,6 @@ export default function GerenciarExercicio() {
           borderless
           onPress={escolherImagem}
           style={[{ borderRadius: 18 }]}
-          // rippleColor={myTheme.colors.primaryContainer}
         >
           <View style={styles.imagePickerBox}>
             { imagem ? (
@@ -156,93 +193,96 @@ export default function GerenciarExercicio() {
             )}
           </View>
         </TouchableRipple>
-
-        <Button
-          mode="contained"
-          onPress={() => {}}
-          buttonColor={myTheme.colors.surface}
-          textColor={myTheme.colors.onSurface}
-          style={{ borderRadius: 16 }}
-          contentStyle={{ 
-            height: 56, 
-            justifyContent: "flex-start", 
-            paddingHorizontal: 8
-          }}
-          icon= {() => <Lucide name="clock" size={24} color={myTheme.colors.tertiary} />}
-        >
-          Visualizar Historico de Carga
-        </Button>
+        {modoEdicao && <Button
+            mode="contained"
+            onPress={() => router.push(`/exercicios/historico?id=${exercicio?.id}`)}
+            buttonColor={myTheme.colors.surface}
+            textColor={myTheme.colors.onSurface}
+            style={{ borderRadius: 16 }}
+            contentStyle={{ 
+              height: 56, 
+              justifyContent: "flex-start", 
+              paddingHorizontal: 8
+            }}
+            icon= {() => <Lucide name="clock" size={24} color={myTheme.colors.tertiary} />}
+          >
+            Visualizar Histórico de Carga
+          </Button>
+        }
 
         <View style={{flexGrow:1, gap: 12}}>
           <Text variant="headlineLarge" style={{marginBottom:-10}} >
-            Series
+            Séries
           </Text>
-          <View style={styles.series}>
-            <Text variant="bodyMedium">
-              Rep.
-            </Text>
-            <TextInput
-              keyboardType="decimal-pad"
-              mode="outlined"
-              value={nome}
-              onChangeText={nome => setNome(nome)}
-              style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
-              outlineStyle={{borderRadius:15, borderWidth:2}}
-            />
+          {series.map((item, index) => (
+            <View style={styles.series}>
+              <Text variant="bodyMedium">
+                Rep.
+              </Text>
+              <TextInput
+                keyboardType="numeric"
+                mode="outlined"
+                value={item.repeticoes?.toString()}
+                onChangeText={(text) => updateSerie(index, "repeticoes", text)}
+                style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
+                outlineStyle={{borderRadius:15, borderWidth:2}}
+              />
 
-            <Text variant="bodyMedium">
-              Carga(Kg):
-            </Text>
-            <TextInput
-              mode="outlined"
-              keyboardType="decimal-pad"
-              value={nome}
-              onChangeText={nome => setNome(nome)}
-              style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
-              outlineStyle={{borderRadius:15, borderWidth:2}}
-            />
+              <Text variant="bodyMedium">
+                Carga(Kg):
+              </Text>
+              <TextInput
+                mode="outlined"
+                keyboardType="numeric"
+                value={item.carga?.toString()}
+                onChangeText={(text) => updateSerie(index, "carga", text)}
+                style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
+                outlineStyle={{borderRadius:15, borderWidth:2}}
+              />
 
-            <View style={{ 
-              flex: 1, 
-              flexDirection: "row", 
-              justifyContent: "flex-end",
-              gap: 0,
-              marginRight:-5
-            }}>
-              <TouchableRipple
-                onPress={() => { /* função copiar */ }}
-                borderless
-                style={{ borderRadius: 20 }}
-              >
-                <View style={{ 
-                  width: 40, 
-                  height: 40, 
-                  justifyContent: "center", 
-                  alignItems: "center" 
-                }}>
-                  <Lucide name="copy" size={24} color={myTheme.colors.tertiary} />
-                </View>
-              </TouchableRipple>
-              
-              <TouchableRipple
-                onPress={() => { /* função excluir */ }}
-                borderless
-                style={{ borderRadius: 20 }}
-              >
-                <View style={{ 
-                  width: 40, 
-                  height: 40, 
-                  justifyContent: "center", 
-                  alignItems: "center" 
-                }}>
-                  <Lucide name="circle-x" size={24} color={myTheme.colors.error} />
-                </View>
-              </TouchableRipple>
+              <View style={{ 
+                flex: 1, 
+                flexDirection: "row", 
+                justifyContent: "flex-end",
+                gap: 0,
+                marginRight:-5
+              }}>
+                <TouchableRipple
+                  onPress={() => copiarSerie(index)}
+                  borderless
+                  style={{ borderRadius: 20 }}
+                >
+                  <View style={{ 
+                    width: 40, 
+                    height: 40, 
+                    justifyContent: "center", 
+                    alignItems: "center" 
+                  }}>
+                    <Lucide name="copy" size={24} color={myTheme.colors.tertiary} />
+                  </View>
+                </TouchableRipple>
+                
+                <TouchableRipple
+                  onPress={() => removerSerie(index)}
+                  borderless
+                  style={{ borderRadius: 20 }}
+                >
+                  <View style={{ 
+                    width: 40, 
+                    height: 40, 
+                    justifyContent: "center", 
+                    alignItems: "center" 
+                  }}>
+                    <Lucide name="circle-x" size={24} color={myTheme.colors.error} />
+                  </View>
+                </TouchableRipple>
+              </View>
             </View>
-          </View>
+          ))}
+
           <Button
             mode="outlined"
-            onPress={() => {}}
+            onPress={adicionarSerie}
             style={{outlineColor:myTheme.colors.onSurfaceVariant, outlineWidth:1, borderRadius:10, height:50}}
           >
             <Lucide name="plus" size={24} color={myTheme.colors.primary} />
@@ -268,7 +308,8 @@ export default function GerenciarExercicio() {
                 onPress={hideModal}
                 style={{ flex: 1 }}
                 mode="contained"
-                buttonColor={myTheme.colors.surface}
+                buttonColor={myTheme.colors.secondary}
+                textColor={myTheme.colors.onSurface}
               >
                 Cancelar
               </Button>
@@ -281,6 +322,7 @@ export default function GerenciarExercicio() {
                 style={{ flex: 1 }}
                 mode="contained"
                 buttonColor={myTheme.colors.error}
+                textColor={myTheme.colors.onSurface}
               >
                 Deletar
               </Button>
@@ -304,7 +346,7 @@ export default function GerenciarExercicio() {
             onPress={handleEditarAdicionar} 
             textColor={myTheme.colors.onSurface}
             style={styles.button}
-            // disabled={nome.trim() === "" || series.length === 0}
+            disabled={nome.trim() === "" || series.length === 0}
           >
             {modoEdicao ? "Salvar" : "Adicionar"}
           </Button>

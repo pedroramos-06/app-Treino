@@ -8,7 +8,7 @@ function ExercicioItem({item}: {item: Exercicio}) {
   const router = useRouter();
 
   return (
-    <TouchableRipple borderless style={styles.exercicio} onPress={() => {}}>
+    <TouchableRipple borderless style={styles.exercicio} onPress={() => router.push(`/exercicios/gerenciar?id=${item.id}`)}>
       <View style={styles.exercicioContent}>
         <Image source={typeof item.imagem === "string" ? {uri: item.imagem} : require("../assets/exercicio.jpg")} style={styles.imagem} />
         <View style={{ width: "70%", marginVertical: 4, gap: 3 }}>
