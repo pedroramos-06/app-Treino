@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { ActivityIndicator, View } from "react-native";
-// import { useAsyncStorage } from "@react-native-async-storage/async-storage";
+import { useAsyncStorage } from "@react-native-async-storage/async-storage";
 import myTheme from "@/theme/theme";
 
 export interface Serie {
@@ -51,7 +51,11 @@ const MOCK_EXERCICIOS: Exercicio[] = [
     historico: [
       {
         data: "2026-01-25",
-        series: [{ repeticoes: 12, carga: 70 }],
+        series: [{ repeticoes: 123, carga: 70 }, { repeticoes: 12, carga: 70 }, { repeticoes: 12, carga: 70 }],
+      },
+      {
+        data: "2026-02-02",
+        series: [{ repeticoes: 12, carga: 20 }, { repeticoes: 12, carga: 20 }, { repeticoes: 12, carga: 20 }],
       },
     ],
   },
@@ -158,32 +162,31 @@ interface ExercicioProviderProps {
 }
 
 export function ExercicioProvider({children}: ExercicioProviderProps) {
-//   const { getItem, setItem } = useAsyncStorage("@exercicios");
+  const { getItem, setItem } = useAsyncStorage("@exercicios");
   const [exercicios, setExercicios] = useState<Exercicio[]>(MOCK_EXERCICIOS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // async function lerDados() {
-    //   try {
-    //     const item = await getItem();
-    //     setExercicios(item !== null ? JSON.parse(item) : []);
-    //   } catch(e) {
-    //     console.error("Erro ao carregar exercícios do AsyncStorage", e);
-    //     setExercicios([]);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // }
+    async function lerDados() {
+      try {
+        const item = await getItem();
+        setExercicios(item !== null ? JSON.parse(item) : MOCK_EXERCICIOS);
+      } catch(e) {
+        console.error("Erro ao carregar exercícios do AsyncStorage", e);
+        setExercicios([]);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    // lerDados();
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000)
+    lerDados();
   }, []);
 
-//   const guardarDados = async (estadoAtual: Exercicio[]) => {
-//     await setItem(JSON.stringify(estadoAtual));
-//   }
+  useEffect(() => {
+    if (!loading) { 
+      setItem(JSON.stringify(exercicios));
+    }
+  }, [exercicios]);
 
   function encontrarExercicioPorID (id: string | string[]) {
     const idBusca = Array.isArray(id) ? id[0] : id;
@@ -195,7 +198,6 @@ export function ExercicioProvider({children}: ExercicioProviderProps) {
     setExercicios(estadoAtual => {
       const novoVetor = [novaExercicio, ...estadoAtual];
 
-    //   guardarDados(novoVetor);
       return novoVetor;
     });
   }
@@ -204,7 +206,6 @@ export function ExercicioProvider({children}: ExercicioProviderProps) {
     setExercicios(estadoAtual => {
       const novoVetor = estadoAtual.map((item) => item.id === ExercicioEditado.id ? ExercicioEditado: item);
 
-    //   guardarDados(novoVetor);
       return novoVetor;
     });
   }
@@ -213,7 +214,6 @@ export function ExercicioProvider({children}: ExercicioProviderProps) {
     setExercicios(estadoAtual => {
       const novoVetor = estadoAtual.filter(item => item.id !== id);
 
-    //   guardarDados(novoVetor);
       return novoVetor;
     });
   }
