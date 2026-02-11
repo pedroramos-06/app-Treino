@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { Exercicio } from "@/contexts/ExercicioContext";
 import { Ficha, useFichas } from "@/contexts/FichaContext";
 import FichaExercicioItem from "@/components/FichaExercicioItem";
-import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
+import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 
 export default function GerenciarFicha() {
   const router = useRouter();
@@ -90,6 +90,94 @@ export default function GerenciarFicha() {
     }
   }
 
+  const renderHeader = () => (
+  <View style={{ gap: 18, marginBottom: 18 }}>
+    <TextInput
+      mode="outlined"
+      label="Nome"
+      placeholder={modoEdicao ? ficha?.nome : ""}
+      value={nome}
+      onChangeText={nome => setNome(nome)}
+      style={{ backgroundColor: myTheme.colors.surface }}
+      outlineStyle={{ borderRadius: 15, borderWidth: 2 }}
+    />
+    <TouchableRipple
+      borderless
+      onPress={escolherImagem}
+      style={[{ borderRadius: 18 }]}
+    >
+      <View style={styles.imagePickerBox}>
+        {imagem ? (
+          <Image source={{ uri: imagem }} style={styles.imagem} />
+        ) : ficha?.imagem ? (
+          <Image source={typeof ficha.imagem === "string" ? { uri: ficha.imagem } : require("@/assets/exercicio.jpg")} style={styles.imagem} />
+        ) : (
+          <View style={styles.placeholderContainer}>
+            <Lucide name="camera" size={32} color={myTheme.colors.onSurfaceVariant} />
+            <Text variant="bodyMedium" style={{ color: myTheme.colors.onSurfaceVariant }}>
+              Selecione uma imagem
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableRipple>
+    <Text variant="headlineLarge" style={{ marginBottom: -10 }}>
+      Exercícios
+    </Text>
+  </View>
+);
+
+const renderFooter = () => (
+  <View style={{ marginTop: 18 }}>
+    <View style={[styles.footerContainer, { paddingBottom: insets.bottom + 16, paddingHorizontal: 0 }]}>
+      <Button
+        mode="contained"
+        onPress={() => router.back()}
+        style={styles.button}
+        buttonColor={myTheme.colors.secondary}
+        textColor={myTheme.colors.onSurface}
+      >
+        Cancelar
+      </Button>
+      <Button
+        mode="contained"
+        onPress={handleEditarAdicionar}
+        textColor={myTheme.colors.onSurface}
+        style={styles.button}
+        disabled={nome.trim() === "" || exercicios.length === 0}
+      >
+        {modoEdicao ? "Salvar" : "Adicionar"}
+      </Button>
+    </View>
+
+    <Portal>
+      <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalBox}>
+        <Text variant="headlineSmall" style={{ textAlign: "center" }}>
+          Tem certeza que deseja excluir essa ficha?
+        </Text>
+        <View style={styles.modalButtonContainer}>
+          <Button onPress={hideModal} style={{ flex: 1 }} mode="contained" buttonColor={myTheme.colors.secondary} textColor={myTheme.colors.onSurface}>
+            Cancelar
+          </Button>
+          <Button
+            onPress={() => {
+              excluirFicha(ficha!.id);
+              hideModal();
+              router.back();
+            }}
+            style={{ flex: 1 }}
+            mode="contained"
+            buttonColor={myTheme.colors.error}
+            textColor={myTheme.colors.onSurface}
+          >
+            Deletar
+          </Button>
+        </View>
+      </Modal>
+    </Portal>
+  </View>
+);
+
   if(modoEdicao && !ficha){
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: myTheme.colors.background }}>
@@ -114,135 +202,33 @@ export default function GerenciarFicha() {
         {modoEdicao && <Appbar.Action icon={() => (<Lucide name="trash-2" size={24} color={myTheme.colors.error}> </Lucide>)} onPress={showModal} />}
       </Appbar.Header>
 
-      <ScrollView
-        style={{
-        flex: 1,
-        backgroundColor: myTheme.colors.background,
-        position: "relative",
-      }}
-      contentContainerStyle={{
-        paddingHorizontal: 20,
-        gap: 18,
-      }}
-      >
-        <TextInput
-          mode="outlined"
-          label="Nome"
-          placeholder={modoEdicao ? ficha?.nome : ""}
-          value={nome}
-          onChangeText={nome => setNome(nome)}
-          style={{ backgroundColor: myTheme.colors.surface }}
-          outlineStyle={{borderRadius:15, borderWidth:2}}
-        />
-        <TouchableRipple
-          borderless
-          onPress={escolherImagem}
-          style={[{ borderRadius: 18 }]}
-        >
-          <View style={styles.imagePickerBox}>
-            { imagem ? (
-              <Image source={{ uri: imagem }} style={styles.imagem} />
-            )
-            : ficha?.imagem ? (
-              <Image source={typeof ficha.imagem === "string" ? {uri: ficha.imagem} : require("@/assets/exercicio.jpg")} style={styles.imagem} />
-            )
-            : (
-              <View style={styles.placeholderContainer}>
-                <Lucide name="camera" size={32} color={myTheme.colors.onSurfaceVariant} />
-                <Text variant="bodyMedium" style={{ color: myTheme.colors.onSurfaceVariant }}>
-                  Selecione uma imagem
-                </Text>
-              </View>
-            )}
-          </View>
-        </TouchableRipple>
-
-        <DraggableFlatList
-          data={exercicios}
-          // onDragEnd={({ data }) => salvarNovaOrdem(data)}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ 
-            // paddingHorizontal: 20,
-            overflow: 'visible' // Garante que o item flutuando não suma nas bordas da lista
-          }}
-          renderItem={({ item, drag, isActive }) => (
-            <ScaleDecorator>
-              <FichaExercicioItem 
-                item={item} 
-                drag={drag} 
-                isActive={isActive} 
-                apagarExercicio={() => {}} 
-              />
-            </ScaleDecorator>
-          )}
-          showsVerticalScrollIndicator={false}
-          numColumns={1}
-          // onScroll={onScroll}
-        />
-
-        <Portal>
-          <Modal
-            visible={visible}
-            onDismiss={hideModal}
-            contentContainerStyle={styles.modalBox}
-          >
-            <Text
-              variant="headlineSmall"
-              style={{ marginLeft: 8, textAlign: "center" }}
-            >
-              Tem certeza que deseja excluir esse exercício?
-            </Text>
-
-            <View style={styles.modalButtonContainer}>
-              <Button
-                onPress={hideModal}
-                style={{ flex: 1 }}
-                mode="contained"
-                buttonColor={myTheme.colors.secondary}
-                textColor={myTheme.colors.onSurface}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onPress={() => {
-                  excluirFicha(ficha!.id);
-                  hideModal();
-                  router.back();
-                }}
-                style={{ flex: 1 }}
-                mode="contained"
-                buttonColor={myTheme.colors.error}
-                textColor={myTheme.colors.onSurface}
-              >
-                Deletar
-              </Button>
-            </View>
-          </Modal>
-        </Portal>
-      </ScrollView>
-
-      <View style={[styles.footerContainer, {paddingBottom: insets.bottom+16}]}>
-          <Button 
-            mode="contained" 
-            onPress={() => router.back()} 
-            style={styles.button}
-            buttonColor= {myTheme.colors.secondary}
-            textColor={myTheme.colors.onSurface}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            mode="contained" 
-            onPress={handleEditarAdicionar} 
-            textColor={myTheme.colors.onSurface}
-            style={styles.button}
-            disabled={nome.trim() === "" || exercicios.length === 0}
-          >
-            {modoEdicao ? "Salvar" : "Adicionar"}
-          </Button>
-          
-        </View>
-      
+      <DraggableFlatList
+        data={exercicios}
+        onDragEnd={({ data }) => setExercicios(data)}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        containerStyle={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          overflow: "visible",
+          flexGrow:1
+        }}
+        ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
+        renderItem={({ item, drag, isActive }) => (
+          <ScaleDecorator>
+            <FichaExercicioItem 
+              item={item} 
+              drag={drag} 
+              isActive={isActive} 
+              apagarExercicio={() => {
+                setExercicios(prev => prev.filter(ex => ex.id !== item.id))
+              }} 
+            />
+          </ScaleDecorator>
+        )}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
