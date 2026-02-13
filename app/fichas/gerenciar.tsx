@@ -1,30 +1,39 @@
-import { View, StyleSheet, Image, ScrollView, FlatList } from "react-native";
-import myTheme from "@/theme/theme";
-import {
-  Appbar,
-  TextInput,
-  Text,
-  TouchableRipple,
-  Button,
-  ActivityIndicator,
-  Modal,
-  Portal
-} from "react-native-paper";
-import Lucide from "@react-native-vector-icons/lucide";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as ImagePicker from "expo-image-picker"
-import { useEffect, useState, useCallback } from "react";
+import FichaExercicioItem from "@/components/FichaExercicioItem";
 import { Exercicio } from "@/contexts/ExercicioContext";
 import { Ficha, useFichas } from "@/contexts/FichaContext";
-import FichaExercicioItem from "@/components/FichaExercicioItem";
-import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
+import myTheme from "@/theme/theme";
+import Lucide from "@react-native-vector-icons/lucide";
+import * as ImagePicker from "expo-image-picker";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Image, StyleSheet, View } from "react-native";
+import DraggableFlatList, {
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
+import {
+  ActivityIndicator,
+  Appbar,
+  Button,
+  Modal,
+  Portal,
+  Text,
+  TextInput,
+  TouchableRipple,
+} from "react-native-paper";
+import ReorderableList from "react-native-reorderable-list";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GerenciarFicha() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
-  const { getExercicios, editarFicha, adicionarFicha, excluirFicha, encontrarFichaPorID } = useFichas();
+  const {
+    getExercicios,
+    editarFicha,
+    adicionarFicha,
+    excluirFicha,
+    encontrarFichaPorID,
+  } = useFichas();
 
   const modoEdicao = id !== "novo";
 
@@ -32,7 +41,7 @@ export default function GerenciarFicha() {
   const [nome, setNome] = useState("");
   const [imagem, setImagem] = useState<string | null>(null);
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
-  
+
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
@@ -42,24 +51,24 @@ export default function GerenciarFicha() {
       id: modoEdicao ? ficha!.id : new Date().getTime().toString(),
       nome: nome,
       imagem: imagem ? imagem : modoEdicao ? ficha!.imagem : null,
-      exerciciosIds: exercicios.map((exercicio) => exercicio.id)
-    }
+      exerciciosIds: exercicios.map((exercicio) => exercicio.id),
+    };
 
-    if(modoEdicao){
+    if (modoEdicao) {
       editarFicha(novaFicha);
     } else {
       adicionarFicha(novaFicha);
     }
 
     router.back();
-  }
+  };
 
   useEffect(() => {
-    if(modoEdicao) {
+    if (modoEdicao) {
       const fichaEncontrada = encontrarFichaPorID(id);
 
-      if(fichaEncontrada) {
-        setFicha(fichaEncontrada)
+      if (fichaEncontrada) {
+        setFicha(fichaEncontrada);
         setNome(fichaEncontrada.nome);
         setExercicios(getExercicios(fichaEncontrada.exerciciosIds));
       } else {
@@ -71,26 +80,74 @@ export default function GerenciarFicha() {
   const escolherImagem = async () => {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if(permissao.granted === false){
+    if (permissao.granted === false) {
       alert("Precisamos de permissão para acessar sua galeria!");
       return;
     }
 
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
-      allowsEditing: true, 
-      aspect: [4, 3],      
-      quality: 1,          
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
     });
 
-    if(!resultado.canceled){
-      setImagem(resultado.assets[0].uri)
+    if (!resultado.canceled) {
+      setImagem(resultado.assets[0].uri);
     }
-  }
+  };
+
+  const handleApagarExercicio = useCallback((id: string) => {
+    setExercicios((prev) => prev.filter((ex) => ex.id !== id));
+  }, []);
+
+  const renderItem = useCallback(
+    ({
+      item,
+      drag,
+      isActive,
+    }: {
+      item: Exercicio;
+      drag: () => {};
+      isActive: boolean;
+    }) => (
+      <ScaleDecorator>
+        <FichaExercicioItem
+          item={item}
+          drag={drag}
+          isActive={isActive}
+          apagarExercicio={() => handleApagarExercicio(item.id)}
+        />
+      </ScaleDecorator>
+    ),
+    [],
+  );
+
+  const onDragEnd = useCallback(({ data }: { data: Exercicio[] }) => {
+    setExercicios(data);
+  }, []);
 
   const renderFooter = () => (
     <View style={{ marginTop: 18 }}>
-      <View style={[styles.footerContainer, { paddingBottom: insets.bottom + 16, paddingHorizontal: 0 }]}>
+      <Button
+        mode="outlined"
+        onPress={() => {}}
+        style={{
+          outlineColor: myTheme.colors.onSurfaceVariant,
+          outlineWidth: 1,
+          borderRadius: 10,
+          height: 50,
+        }}
+      >
+        <Lucide name="plus" size={24} color={myTheme.colors.primary} />
+      </Button>
+
+      <View
+        style={[
+          styles.footerContainer,
+          { paddingBottom: insets.bottom + 16, paddingHorizontal: 0 },
+        ]}
+      >
         <Button
           mode="contained"
           onPress={() => router.back()}
@@ -112,12 +169,22 @@ export default function GerenciarFicha() {
       </View>
 
       <Portal>
-        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalBox}>
+        <Modal
+          visible={visible}
+          onDismiss={hideModal}
+          contentContainerStyle={styles.modalBox}
+        >
           <Text variant="headlineSmall" style={{ textAlign: "center" }}>
             Tem certeza que deseja excluir essa ficha?
           </Text>
           <View style={styles.modalButtonContainer}>
-            <Button onPress={hideModal} style={{ flex: 1 }} mode="contained" buttonColor={myTheme.colors.secondary} textColor={myTheme.colors.onSurface}>
+            <Button
+              onPress={hideModal}
+              style={{ flex: 1 }}
+              mode="contained"
+              buttonColor={myTheme.colors.secondary}
+              textColor={myTheme.colors.onSurface}
+            >
               Cancelar
             </Button>
             <Button
@@ -139,9 +206,16 @@ export default function GerenciarFicha() {
     </View>
   );
 
-  if(modoEdicao && !ficha){
+  if (modoEdicao && !ficha) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: myTheme.colors.background }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: myTheme.colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={myTheme.colors.primary} />
       </View>
     );
@@ -155,15 +229,15 @@ export default function GerenciarFicha() {
         position: "relative",
       }}
     >
-      <Appbar.Header
-        style={{ backgroundColor: myTheme.colors.background }}
-      >
+      <Appbar.Header style={{ backgroundColor: myTheme.colors.background }}>
         <Appbar.Action icon="arrow-left" onPress={() => router.back()} />
-        <Appbar.Content title={modoEdicao ? "Editar Ficha": "Criar Ficha"} />
+        <Appbar.Content title={modoEdicao ? "Editar Ficha" : "Criar Ficha"} />
         {modoEdicao && (
-          <Appbar.Action 
-            icon={() => (<Lucide name="trash-2" size={24} color={myTheme.colors.error} />)} 
-            onPress={showModal} 
+          <Appbar.Action
+            icon={() => (
+              <Lucide name="trash-2" size={24} color={myTheme.colors.error} />
+            )}
+            onPress={showModal}
           />
         )}
       </Appbar.Header>
@@ -188,14 +262,25 @@ export default function GerenciarFicha() {
             {imagem ? (
               <Image source={{ uri: imagem }} style={styles.imagem} />
             ) : ficha?.imagem ? (
-              <Image 
-                source={typeof ficha.imagem === "string" ? { uri: ficha.imagem } : require("@/assets/exercicio.jpg")} 
-                style={styles.imagem} 
+              <Image
+                source={
+                  typeof ficha.imagem === "string"
+                    ? { uri: ficha.imagem }
+                    : require("@/assets/exercicio.jpg")
+                }
+                style={styles.imagem}
               />
             ) : (
               <View style={styles.placeholderContainer}>
-                <Lucide name="camera" size={32} color={myTheme.colors.onSurfaceVariant} />
-                <Text variant="bodyMedium" style={{ color: myTheme.colors.onSurfaceVariant }}>
+                <Lucide
+                  name="camera"
+                  size={32}
+                  color={myTheme.colors.onSurfaceVariant}
+                />
+                <Text
+                  variant="bodyMedium"
+                  style={{ color: myTheme.colors.onSurfaceVariant }}
+                >
                   Selecione uma imagem
                 </Text>
               </View>
@@ -209,7 +294,7 @@ export default function GerenciarFicha() {
 
       <DraggableFlatList
         data={exercicios}
-        onDragEnd={({ data }) => setExercicios(data)}
+        onDragEnd={onDragEnd}
         keyExtractor={(item) => item.id}
         ListFooterComponent={renderFooter}
         containerStyle={{ flex: 1 }}
@@ -219,20 +304,24 @@ export default function GerenciarFicha() {
           flexGrow: 1
         }}
         ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
-        renderItem={({ item, drag, isActive }) => (
-          <ScaleDecorator>
-            <FichaExercicioItem 
-              item={item} 
-              drag={drag} 
-              isActive={isActive} 
-              apagarExercicio={() => {
-                setExercicios(prev => prev.filter(ex => ex.id !== item.id))
-              }} 
-            />
-          </ScaleDecorator>
-        )}
+        renderItem={renderItem as any}
         showsVerticalScrollIndicator={false}
       />
+      {/* <ReorderableList
+        data={exercicios}
+        onReorder={onDragEnd}
+        keyExtractor={(item: Exercicio) => item.id}
+        ListFooterComponent={renderFooter}
+        containerStyle={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          overflow: "visible",
+          flexGrow: 1,
+        }}
+        ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
+        renderItem={renderItem as any}
+        showsVerticalScrollIndicator={false}
+      /> */}
     </View>
   );
 }
@@ -281,7 +370,7 @@ const styles = StyleSheet.create({
     borderColor: myTheme.colors.onSurfaceVariant,
     justifyContent: "center",
     alignItems: "center",
-    overflow: "hidden", 
+    overflow: "hidden",
   },
   modalButtonContainer: {
     flexDirection: "row",

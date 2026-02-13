@@ -17,6 +17,8 @@ import {
 import { PaperProvider } from 'react-native-paper';
 import { StatusBar } from "expo-status-bar";
 import { ExercicioProvider } from "@/contexts/ExercicioContext";
+import { FichaProvider } from "@/contexts/FichaContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,11 +45,16 @@ export default function RootLayout() {
     <PaperProvider theme={myTheme}>
       <StatusBar style="light" />
       <ExercicioProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="exercicios/gerenciar" options={{ headerShown: false }} />
-          <Stack.Screen name="exercicios/historico" options={{ headerShown: false }} />
-        </Stack>
+        <FichaProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="exercicios/gerenciar" options={{ headerShown: false }} />
+              <Stack.Screen name="exercicios/historico" options={{ headerShown: false }} />
+              <Stack.Screen name="fichas/gerenciar" options={{ headerShown: false }} />
+            </Stack>
+          </GestureHandlerRootView>
+        </FichaProvider>
       </ExercicioProvider>
     </PaperProvider>
   );
