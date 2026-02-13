@@ -1,26 +1,24 @@
 import FichaExercicioItem from "@/components/FichaExercicioItem";
-import { Exercicio } from "@/contexts/ExercicioContext";
+import { ListaExercicios } from "@/components/telas/ListaExercicios";
+import { Exercicio, useExercicios } from "@/contexts/ExercicioContext";
 import { Ficha, useFichas } from "@/contexts/FichaContext";
 import myTheme from "@/theme/theme";
 import Lucide from "@react-native-vector-icons/lucide";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
-import DraggableFlatList, {
-  ScaleDecorator,
-} from "react-native-draggable-flatlist";
+import { Image, StyleSheet, View, Modal } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
   Button,
-  Modal,
+  Modal as ModalPaper,
   Portal,
   Text,
   TextInput,
   TouchableRipple,
 } from "react-native-paper";
-import ReorderableList from "react-native-reorderable-list";
+import ReorderableList, { ReorderableListReorderEvent } from "react-native-reorderable-list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GerenciarFicha() {
@@ -35,6 +33,8 @@ export default function GerenciarFicha() {
     encontrarFichaPorID,
   } = useFichas();
 
+  const {exercicios: exerciciosGlobal} = useExercicios();
+
   const modoEdicao = id !== "novo";
 
   const [ficha, setFicha] = useState<Ficha | null>(null);
@@ -45,6 +45,8 @@ export default function GerenciarFicha() {
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
+
+  const [modalVisivel, setModalVisivel] = useState(false);
 
   const handleEditarAdicionar = () => {
     const novaFicha: Ficha = {
@@ -77,6 +79,12 @@ export default function GerenciarFicha() {
     }
   }, [id, modoEdicao]);
 
+  useEffect(() => {
+    if(ficha){
+      setExercicios(getExercicios(ficha.exerciciosIds));
+    }
+  }, [exerciciosGlobal]);
+
   const escolherImagem = async () => {
     const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -101,47 +109,28 @@ export default function GerenciarFicha() {
     setExercicios((prev) => prev.filter((ex) => ex.id !== id));
   }, []);
 
-  const renderItem = useCallback(
-    ({
-      item,
-      drag,
-      isActive,
-    }: {
-      item: Exercicio;
-      drag: () => {};
-      isActive: boolean;
-    }) => (
-      <ScaleDecorator>
-        <FichaExercicioItem
-          item={item}
-          drag={drag}
-          isActive={isActive}
-          apagarExercicio={() => handleApagarExercicio(item.id)}
-        />
-      </ScaleDecorator>
-    ),
-    [],
-  );
-
-  const onDragEnd = useCallback(({ data }: { data: Exercicio[] }) => {
-    setExercicios(data);
+  const handleReorder = useCallback(({ from, to }: ReorderableListReorderEvent) => {
+    setExercicios((prev) => {
+      const novoVetor = [...prev];
+      const [itemRemovido] = novoVetor.splice(from, 1);
+      novoVetor.splice(to, 0, itemRemovido);
+      return novoVetor;
+    });
   }, []);
 
   const renderFooter = () => (
     <View style={{ marginTop: 18 }}>
       <Button
         mode="outlined"
-        onPress={() => {}}
+        onPress={() => setModalVisivel(true)}
         style={{
           outlineColor: myTheme.colors.onSurfaceVariant,
           outlineWidth: 1,
           borderRadius: 10,
-          height: 50,
         }}
       >
         <Lucide name="plus" size={24} color={myTheme.colors.primary} />
       </Button>
-
       <View
         style={[
           styles.footerContainer,
@@ -169,7 +158,7 @@ export default function GerenciarFicha() {
       </View>
 
       <Portal>
-        <Modal
+        <ModalPaper
           visible={visible}
           onDismiss={hideModal}
           contentContainerStyle={styles.modalBox}
@@ -201,7 +190,7 @@ export default function GerenciarFicha() {
               Deletar
             </Button>
           </View>
-        </Modal>
+        </ModalPaper>
       </Portal>
     </View>
   );
@@ -242,7 +231,6 @@ export default function GerenciarFicha() {
         )}
       </Appbar.Header>
 
-      {/* 🔹 CABEÇALHO AGORA FORA DA FLATLIST – ESTILO IDÊNTICO */}
       <View style={{ paddingHorizontal: 20, gap: 18, marginBottom: 18 }}>
         <TextInput
           mode="outlined"
@@ -292,36 +280,42 @@ export default function GerenciarFicha() {
         </Text>
       </View>
 
-      <DraggableFlatList
+      <ReorderableList
         data={exercicios}
-        onDragEnd={onDragEnd}
+        onReorder={handleReorder}
         keyExtractor={(item) => item.id}
         ListFooterComponent={renderFooter}
-        containerStyle={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          overflow: "visible",
-          flexGrow: 1
-        }}
-        ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
-        renderItem={renderItem as any}
-        showsVerticalScrollIndicator={false}
-      />
-      {/* <ReorderableList
-        data={exercicios}
-        onReorder={onDragEnd}
-        keyExtractor={(item: Exercicio) => item.id}
-        ListFooterComponent={renderFooter}
-        containerStyle={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 20,
           overflow: "visible",
           flexGrow: 1,
         }}
         ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
-        renderItem={renderItem as any}
+        renderItem={({ item }) => (
+          <FichaExercicioItem
+            item={item}
+            isActive={false}
+            apagarExercicio={() => handleApagarExercicio(item.id)}
+          />
+        )}
         showsVerticalScrollIndicator={false}
-      /> */}
+      />
+
+      <Modal 
+        visible={modalVisivel} 
+        animationType="slide" 
+        onRequestClose={() => setModalVisivel(false)}
+        presentationStyle="fullScreen"
+        statusBarTranslucent={true}
+      >
+        <ListaExercicios
+          onClose={() => setModalVisivel(false)}
+          onSelect={(e) => {
+            setExercicios(prev => ([...prev, e]))
+            setModalVisivel(false);
+          }}
+        />
+      </Modal>
     </View>
   );
 }

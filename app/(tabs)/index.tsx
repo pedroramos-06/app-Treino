@@ -5,17 +5,13 @@ import { View } from "react-native";
 import { AnimatedFAB, Searchbar, Text } from "react-native-paper";
 import Lucide from "@react-native-vector-icons/lucide";
 import { useRouter } from "expo-router";
-import ExercicioItem from "@/components/ExercicioItem";
-
-export interface Ficha {
-  id: string;
-  nome: string;
-  exerciciosIds: string[];
-}
+import { useFichas } from "@/contexts/FichaContext";
+import FichaItem from "@/components/FichaItem";
 
 export default function TabOneScreen() {
   const [isExtended, setIsExtended] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const {fichas} = useFichas();
   const router = useRouter();
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -24,19 +20,19 @@ export default function TabOneScreen() {
     setIsExtended(currentScrollPosition <= 0);
   };
 
-  // const filteredData = useMemo(() => {
-  //   const query = searchQuery.toLowerCase().trim();
+  const filteredData = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
 
-  //   if(query === "") {
-  //     return MOCK_EXERCICIOS;
-  //   }
+    if(query === "") {
+      return fichas;
+    }
 
-  //   return MOCK_EXERCICIOS.filter((exercicio) => {
-  //     const nomeExercicio = exercicio.nome.toLowerCase();
+    return fichas.filter((ficha) => {
+      const nomeFicha = ficha.nome.toLowerCase();
 
-  //     return nomeExercicio.includes(query);
-  //   })
-  // }, [searchQuery, MOCK_EXERCICIOS]);
+      return nomeFicha.includes(query);
+    })
+  }, [searchQuery, fichas]);
 
   return (
     <View style={{
@@ -54,20 +50,20 @@ export default function TabOneScreen() {
           style={styles.searchbar}
           inputStyle={{ color: myTheme.colors.onSurface }}
         />
-{/* 
+
         {filteredData.length === 0
         ? <View style={{flex: 1, marginTop:40, gap:10, alignItems: 'center'}}>
-            <Text variant="headlineSmall" style={{textAlign: 'center'}}>Nenhum Exercício Encontrado</Text>
+            <Text variant="headlineSmall" style={{textAlign: 'center'}}>Nenhuma Ficha Encontrada</Text>
           </View>
         :  <FlatList
             data={filteredData}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <ExercicioItem item={item} />}
+            renderItem={({ item }) => <FichaItem item={item} />}
             showsVerticalScrollIndicator={false}
             numColumns={1}
             onScroll={onScroll}
           />
-        } */}
+        }
       </View>
 
       <AnimatedFAB
@@ -75,9 +71,9 @@ export default function TabOneScreen() {
         icon={({ color, size }) => (
           <Lucide name="plus" color={color} size={size} />
         )}
-        label={"Novo Exercício"}
+        label={"Nova Ficha"}
         extended={isExtended}
-        onPress={() => {}}
+        onPress={() => router.push("/fichas/gerenciar?id=novo")}
         visible={true}
         iconMode={"dynamic"}
         style={[styles.fabStyle]}
