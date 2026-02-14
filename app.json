@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "app-treino",
+    "name": "App Treino",
     "slug": "app-treino",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,9 +8,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "apptreino",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false, 
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/icon.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,12 +19,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/adaptative-icon.png",
+        "backgroundColor": "#ffffff",
+        "monochromeImage": "./assets/images/adaptative-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.pedroramos06.apptreino"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +39,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "34566ceb-850a-4e79-bd04-54cb4975923c"
+      }
     }
   }
 }

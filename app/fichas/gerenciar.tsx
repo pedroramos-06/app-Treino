@@ -7,7 +7,7 @@ import Lucide from "@react-native-vector-icons/lucide";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, View, Modal } from "react-native";
+import { Image, StyleSheet, View, Modal, TouchableWithoutFeedback, Keyboard } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -80,7 +80,7 @@ export default function GerenciarFicha() {
   }, [id, modoEdicao]);
 
   useEffect(() => {
-    if(ficha){
+    if(ficha && !modalVisivel){
       setExercicios(getExercicios(ficha.exerciciosIds));
     }
   }, [exerciciosGlobal]);
@@ -211,112 +211,115 @@ export default function GerenciarFicha() {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: myTheme.colors.background,
-        position: "relative",
-      }}
-    >
-      <Appbar.Header style={{ backgroundColor: myTheme.colors.background }}>
-        <Appbar.Action icon="arrow-left" onPress={() => router.back()} />
-        <Appbar.Content title={modoEdicao ? "Editar Ficha" : "Criar Ficha"} />
-        {modoEdicao && (
-          <Appbar.Action
-            icon={() => (
-              <Lucide name="trash-2" size={24} color={myTheme.colors.error} />
-            )}
-            onPress={showModal}
-          />
-        )}
-      </Appbar.Header>
-
-      <View style={{ paddingHorizontal: 20, gap: 18, marginBottom: 18 }}>
-        <TextInput
-          mode="outlined"
-          label="Nome"
-          placeholder={modoEdicao ? ficha?.nome : ""}
-          value={nome}
-          onChangeText={setNome}
-          style={{ backgroundColor: myTheme.colors.surface }}
-          outlineStyle={{ borderRadius: 15, borderWidth: 2 }}
-        />
-        <TouchableRipple
-          borderless
-          onPress={escolherImagem}
-          style={[{ borderRadius: 18 }]}
-        >
-          <View style={styles.imagePickerBox}>
-            {imagem ? (
-              <Image source={{ uri: imagem }} style={styles.imagem} />
-            ) : ficha?.imagem ? (
-              <Image
-                source={
-                  typeof ficha.imagem === "string"
-                    ? { uri: ficha.imagem }
-                    : require("@/assets/exercicio.jpg")
-                }
-                style={styles.imagem}
-              />
-            ) : (
-              <View style={styles.placeholderContainer}>
-                <Lucide
-                  name="camera"
-                  size={32}
-                  color={myTheme.colors.onSurfaceVariant}
-                />
-                <Text
-                  variant="bodyMedium"
-                  style={{ color: myTheme.colors.onSurfaceVariant }}
-                >
-                  Selecione uma imagem
-                </Text>
-              </View>
-            )}
-          </View>
-        </TouchableRipple>
-        <Text variant="headlineLarge" style={{ marginBottom: -10 }}>
-          Exercícios
-        </Text>
-      </View>
-
-      <ReorderableList
-        data={exercicios}
-        onReorder={handleReorder}
-        keyExtractor={(item) => item.id}
-        ListFooterComponent={renderFooter}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          overflow: "visible",
-          flexGrow: 1,
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: myTheme.colors.background,
+          position: "relative",
         }}
-        ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
-        renderItem={({ item }) => (
-          <FichaExercicioItem
-            item={item}
-            isActive={false}
-            apagarExercicio={() => handleApagarExercicio(item.id)}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
-      />
-
-      <Modal 
-        visible={modalVisivel} 
-        animationType="slide" 
-        onRequestClose={() => setModalVisivel(false)}
-        presentationStyle="fullScreen"
-        statusBarTranslucent={true}
       >
-        <ListaExercicios
-          onClose={() => setModalVisivel(false)}
-          onSelect={(e) => {
-            setExercicios(prev => ([...prev, e]))
-            setModalVisivel(false);
+        <Appbar.Header style={{ backgroundColor: myTheme.colors.background }}>
+          <Appbar.Action icon="arrow-left" onPress={() => router.back()} />
+          <Appbar.Content title={modoEdicao ? "Editar Ficha" : "Criar Ficha"} />
+          {modoEdicao && (
+            <Appbar.Action
+              icon={() => (
+                <Lucide name="trash-2" size={24} color={myTheme.colors.error} />
+              )}
+              onPress={showModal}
+            />
+          )}
+        </Appbar.Header>
+
+        <View style={{ paddingHorizontal: 20, gap: 18, marginBottom: 18 }}>
+          <TextInput
+            mode="outlined"
+            label="Nome"
+            placeholder={modoEdicao ? ficha?.nome : ""}
+            value={nome}
+            onChangeText={setNome}
+            style={{ backgroundColor: myTheme.colors.background }}
+            outlineStyle={{ borderRadius: 15, borderWidth: 2 }}
+          />
+          <TouchableRipple
+            borderless
+            onPress={escolherImagem}
+            style={[{ borderRadius: 18 }]}
+          >
+            <View style={styles.imagePickerBox}>
+              {imagem ? (
+                <Image source={{ uri: imagem }} style={styles.imagem} />
+              ) : ficha?.imagem ? (
+                <Image
+                  source={
+                    typeof ficha.imagem === "string"
+                      ? { uri: ficha.imagem }
+                      : require("@/assets/exercicio.jpg")
+                  }
+                  style={styles.imagem}
+                />
+              ) : (
+                <View style={styles.placeholderContainer}>
+                  <Lucide
+                    name="camera"
+                    size={32}
+                    color={myTheme.colors.onSurfaceVariant}
+                  />
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: myTheme.colors.onSurfaceVariant }}
+                  >
+                    Selecione uma imagem
+                  </Text>
+                </View>
+              )}
+            </View>
+          </TouchableRipple>
+          <Text variant="headlineLarge" style={{ marginBottom: -10 }}>
+            Exercícios
+          </Text>
+        </View>
+
+        <ReorderableList
+          data={exercicios}
+          onReorder={handleReorder}
+          keyExtractor={(item) => item.id}
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            overflow: "visible",
+            flexGrow: 1,
           }}
+          ListFooterComponentStyle={{ flex: 1, justifyContent: "flex-end" }}
+          renderItem={({ item }) => (
+            <FichaExercicioItem
+              item={item}
+              isActive={false}
+              apagarExercicio={() => handleApagarExercicio(item.id)}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
         />
-      </Modal>
-    </View>
+
+        <Modal 
+          visible={modalVisivel} 
+          animationType="slide" 
+          onRequestClose={() => setModalVisivel(false)}
+          presentationStyle="fullScreen"
+          statusBarTranslucent={true}
+        >
+          <ListaExercicios
+            onClose={() => setModalVisivel(false)}
+            onSelect={(e) => {
+              setExercicios(prev => ([...prev, e]));
+              ficha?.exerciciosIds.push(e.id);
+              setModalVisivel(false);
+            }}
+          />
+        </Modal>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 

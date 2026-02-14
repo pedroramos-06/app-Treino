@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, ScrollView } from "react-native";
+import { View, StyleSheet, Image, ScrollView, TouchableWithoutFeedback, Keyboard } from "react-native";
 import myTheme from "@/theme/theme";
 import {
   Appbar,
@@ -136,224 +136,226 @@ export default function GerenciarExercicio() {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: myTheme.colors.background,
-        position: "relative",
-      }}
-    >
-      <Appbar.Header
-        style={{ backgroundColor: myTheme.colors.background }}
-      >
-        <Appbar.Action icon="arrow-left" onPress={() => router.back()} />
-        <Appbar.Content title={modoEdicao ? "Editar Exercício": "Adicionar Exercício"}></Appbar.Content>
-        {modoEdicao && <Appbar.Action icon={() => (<Lucide name="trash-2" size={24} color={myTheme.colors.error}> </Lucide>)} onPress={showModal} />}
-      </Appbar.Header>
-
-      <ScrollView
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View
         style={{
-        flex: 1,
-        backgroundColor: myTheme.colors.background,
-        position: "relative",
-      }}
-      contentContainerStyle={{
-        paddingHorizontal: 20,
-        gap: 18,
-      }}
+          flex: 1,
+          backgroundColor: myTheme.colors.background,
+          position: "relative",
+        }}
       >
-        <TextInput
-          mode="outlined"
-          label="Nome"
-          placeholder={modoEdicao ? exercicio?.nome : ""}
-          value={nome}
-          onChangeText={nome => setNome(nome)}
-          style={{ backgroundColor: myTheme.colors.surface }}
-          outlineStyle={{borderRadius:15, borderWidth:2}}
-        />
-        <TouchableRipple
-          borderless
-          onPress={escolherImagem}
-          style={[{ borderRadius: 18 }]}
+        <Appbar.Header
+          style={{ backgroundColor: myTheme.colors.background }}
         >
-          <View style={styles.imagePickerBox}>
-            { imagem ? (
-              <Image source={{ uri: imagem }} style={styles.imagem} />
-            )
-            : exercicio?.imagem ? (
-              <Image source={typeof exercicio.imagem === "string" ? {uri: exercicio.imagem} : require("@/assets/exercicio.jpg")} style={styles.imagem} />
-            )
-            : (
-              <View style={styles.placeholderContainer}>
-                <Lucide name="camera" size={32} color={myTheme.colors.onSurfaceVariant} />
-                <Text variant="bodyMedium" style={{ color: myTheme.colors.onSurfaceVariant }}>
-                  Selecione uma imagem
-                </Text>
-              </View>
-            )}
-          </View>
-        </TouchableRipple>
-        {modoEdicao && <Button
-            mode="contained"
-            onPress={() => router.push(`/exercicios/historico?id=${exercicio?.id}`)}
-            buttonColor={myTheme.colors.surface}
-            textColor={myTheme.colors.onSurface}
-            style={{ borderRadius: 16 }}
-            contentStyle={{ 
-              height: 56, 
-              justifyContent: "flex-start", 
-              paddingHorizontal: 8
-            }}
-            icon= {() => <Lucide name="clock" size={24} color={myTheme.colors.tertiary} />}
-          >
-            Visualizar Histórico de Carga
-          </Button>
-        }
+          <Appbar.Action icon="arrow-left" onPress={() => router.back()} />
+          <Appbar.Content title={modoEdicao ? "Editar Exercício": "Adicionar Exercício"}></Appbar.Content>
+          {modoEdicao && <Appbar.Action icon={() => (<Lucide name="trash-2" size={24} color={myTheme.colors.error}> </Lucide>)} onPress={showModal} />}
+        </Appbar.Header>
 
-        <View style={{flexGrow:1, gap: 12}}>
-          <Text variant="headlineLarge" style={{marginBottom:-10}} >
-            Séries
-          </Text>
-          {series.map((item, index) => (
-            <View style={styles.series}>
-              <Text variant="bodyMedium">
-                Rep.
-              </Text>
-              <TextInput
-                keyboardType="numeric"
-                mode="outlined"
-                value={item.repeticoes?.toString()}
-                onChangeText={(text) => updateSerie(index, "repeticoes", text)}
-                style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
-                outlineStyle={{borderRadius:15, borderWidth:2}}
-              />
-
-              <Text variant="bodyMedium">
-                Carga(Kg):
-              </Text>
-              <TextInput
-                mode="outlined"
-                keyboardType="numeric"
-                value={item.carga?.toString()}
-                onChangeText={(text) => updateSerie(index, "carga", text)}
-                style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
-                outlineStyle={{borderRadius:15, borderWidth:2}}
-              />
-
-              <View style={{ 
-                flex: 1, 
-                flexDirection: "row", 
-                justifyContent: "flex-end",
-                gap: 0,
-                marginRight:-5
-              }}>
-                <TouchableRipple
-                  onPress={() => copiarSerie(index)}
-                  borderless
-                  style={{ borderRadius: 20 }}
-                >
-                  <View style={{ 
-                    width: 40, 
-                    height: 40, 
-                    justifyContent: "center", 
-                    alignItems: "center" 
-                  }}>
-                    <Lucide name="copy" size={24} color={myTheme.colors.tertiary} />
-                  </View>
-                </TouchableRipple>
-                
-                <TouchableRipple
-                  onPress={() => removerSerie(index)}
-                  borderless
-                  style={{ borderRadius: 20 }}
-                >
-                  <View style={{ 
-                    width: 40, 
-                    height: 40, 
-                    justifyContent: "center", 
-                    alignItems: "center" 
-                  }}>
-                    <Lucide name="circle-x" size={24} color={myTheme.colors.error} />
-                  </View>
-                </TouchableRipple>
-              </View>
-            </View>
-          ))}
-
-          <Button
+        <ScrollView
+          style={{
+          flex: 1,
+          backgroundColor: myTheme.colors.background,
+          position: "relative",
+        }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          gap: 18,
+        }}
+        >
+          <TextInput
             mode="outlined"
-            onPress={adicionarSerie}
-            style={{outlineColor:myTheme.colors.onSurfaceVariant, outlineWidth:1, borderRadius:10, height:50}}
+            label="Nome"
+            placeholder={modoEdicao ? exercicio?.nome : ""}
+            value={nome}
+            onChangeText={nome => setNome(nome)}
+            style={{ backgroundColor: myTheme.colors.background }}
+            outlineStyle={{borderRadius:15, borderWidth:2}}
+          />
+          <TouchableRipple
+            borderless
+            onPress={escolherImagem}
+            style={[{ borderRadius: 18 }]}
           >
-            <Lucide name="plus" size={24} color={myTheme.colors.primary} />
-          </Button>
-
-        </View>
-
-        <Portal>
-          <Modal
-            visible={visible}
-            onDismiss={hideModal}
-            contentContainerStyle={styles.modalBox}
-          >
-            <Text
-              variant="headlineSmall"
-              style={{ marginLeft: 8, textAlign: "center" }}
-            >
-              Tem certeza que deseja excluir esse exercício?
-            </Text>
-
-            <View style={styles.modalButtonContainer}>
-              <Button
-                onPress={hideModal}
-                style={{ flex: 1 }}
-                mode="contained"
-                buttonColor={myTheme.colors.secondary}
-                textColor={myTheme.colors.onSurface}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onPress={() => {
-                  excluirExercicio(exercicio!.id);
-                  hideModal();
-                  router.back();
-                }}
-                style={{ flex: 1 }}
-                mode="contained"
-                buttonColor={myTheme.colors.error}
-                textColor={myTheme.colors.onSurface}
-              >
-                Deletar
-              </Button>
+            <View style={styles.imagePickerBox}>
+              { imagem ? (
+                <Image source={{ uri: imagem }} style={styles.imagem} />
+              )
+              : exercicio?.imagem ? (
+                <Image source={typeof exercicio.imagem === "string" ? {uri: exercicio.imagem} : require("@/assets/exercicio.jpg")} style={styles.imagem} />
+              )
+              : (
+                <View style={styles.placeholderContainer}>
+                  <Lucide name="camera" size={32} color={myTheme.colors.onSurfaceVariant} />
+                  <Text variant="bodyMedium" style={{ color: myTheme.colors.onSurfaceVariant }}>
+                    Selecione uma imagem
+                  </Text>
+                </View>
+              )}
             </View>
-          </Modal>
-        </Portal>
-      </ScrollView>
+          </TouchableRipple>
+          {modoEdicao && <Button
+              mode="contained"
+              onPress={() => router.push(`/exercicios/historico?id=${exercicio?.id}`)}
+              buttonColor={myTheme.colors.surface}
+              textColor={myTheme.colors.onSurface}
+              style={{ borderRadius: 16 }}
+              contentStyle={{ 
+                height: 56, 
+                justifyContent: "flex-start", 
+                paddingHorizontal: 8
+              }}
+              icon= {() => <Lucide name="clock" size={24} color={myTheme.colors.tertiary} />}
+            >
+              Visualizar Histórico de Carga
+            </Button>
+          }
 
-      <View style={[styles.footerContainer, {paddingBottom: insets.bottom+16}]}>
-          <Button 
-            mode="contained" 
-            onPress={() => router.back()} 
-            style={styles.button}
-            buttonColor= {myTheme.colors.secondary}
-            textColor={myTheme.colors.onSurface}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            mode="contained" 
-            onPress={handleEditarAdicionar} 
-            textColor={myTheme.colors.onSurface}
-            style={styles.button}
-            disabled={nome.trim() === "" || series.length === 0}
-          >
-            {modoEdicao ? "Salvar" : "Adicionar"}
-          </Button>
-          
-        </View>
-      
-    </View>
+          <View style={{flexGrow:1, gap: 12}}>
+            <Text variant="headlineLarge" style={{marginBottom:-10}} >
+              Séries
+            </Text>
+            {series.map((item, index) => (
+              <View style={styles.series}>
+                <Text variant="bodyMedium">
+                  Rep.
+                </Text>
+                <TextInput
+                  keyboardType="numeric"
+                  mode="outlined"
+                  value={item.repeticoes?.toString()}
+                  onChangeText={(text) => updateSerie(index, "repeticoes", text)}
+                  style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
+                  outlineStyle={{borderRadius:15, borderWidth:2}}
+                />
+
+                <Text variant="bodyMedium">
+                  Carga(Kg):
+                </Text>
+                <TextInput
+                  mode="outlined"
+                  keyboardType="numeric"
+                  value={item.carga?.toString()}
+                  onChangeText={(text) => updateSerie(index, "carga", text)}
+                  style={{ backgroundColor: myTheme.colors.background, height: 5, width:50 }}
+                  outlineStyle={{borderRadius:15, borderWidth:2}}
+                />
+
+                <View style={{ 
+                  flex: 1, 
+                  flexDirection: "row", 
+                  justifyContent: "flex-end",
+                  gap: 0,
+                  marginRight:-5
+                }}>
+                  <TouchableRipple
+                    onPress={() => copiarSerie(index)}
+                    borderless
+                    style={{ borderRadius: 20 }}
+                  >
+                    <View style={{ 
+                      width: 40, 
+                      height: 40, 
+                      justifyContent: "center", 
+                      alignItems: "center" 
+                    }}>
+                      <Lucide name="copy" size={24} color={myTheme.colors.tertiary} />
+                    </View>
+                  </TouchableRipple>
+                  
+                  <TouchableRipple
+                    onPress={() => removerSerie(index)}
+                    borderless
+                    style={{ borderRadius: 20 }}
+                  >
+                    <View style={{ 
+                      width: 40, 
+                      height: 40, 
+                      justifyContent: "center", 
+                      alignItems: "center" 
+                    }}>
+                      <Lucide name="circle-x" size={24} color={myTheme.colors.error} />
+                    </View>
+                  </TouchableRipple>
+                </View>
+              </View>
+            ))}
+
+            <Button
+              mode="outlined"
+              onPress={adicionarSerie}
+              style={{outlineColor:myTheme.colors.onSurfaceVariant, outlineWidth:1, borderRadius:10, height:50}}
+            >
+              <Lucide name="plus" size={24} color={myTheme.colors.primary} />
+            </Button>
+
+          </View>
+
+          <Portal>
+            <Modal
+              visible={visible}
+              onDismiss={hideModal}
+              contentContainerStyle={styles.modalBox}
+            >
+              <Text
+                variant="headlineSmall"
+                style={{ marginLeft: 8, textAlign: "center" }}
+              >
+                Tem certeza que deseja excluir esse exercício?
+              </Text>
+
+              <View style={styles.modalButtonContainer}>
+                <Button
+                  onPress={hideModal}
+                  style={{ flex: 1 }}
+                  mode="contained"
+                  buttonColor={myTheme.colors.secondary}
+                  textColor={myTheme.colors.onSurface}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onPress={() => {
+                    excluirExercicio(exercicio!.id);
+                    hideModal();
+                    router.back();
+                  }}
+                  style={{ flex: 1 }}
+                  mode="contained"
+                  buttonColor={myTheme.colors.error}
+                  textColor={myTheme.colors.onSurface}
+                >
+                  Deletar
+                </Button>
+              </View>
+            </Modal>
+          </Portal>
+        </ScrollView>
+
+        <View style={[styles.footerContainer, {paddingBottom: insets.bottom+16}]}>
+            <Button 
+              mode="contained" 
+              onPress={() => router.back()} 
+              style={styles.button}
+              buttonColor= {myTheme.colors.secondary}
+              textColor={myTheme.colors.onSurface}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              mode="contained" 
+              onPress={handleEditarAdicionar} 
+              textColor={myTheme.colors.onSurface}
+              style={styles.button}
+              disabled={nome.trim() === "" || series.length === 0}
+            >
+              {modoEdicao ? "Salvar" : "Adicionar"}
+            </Button>
+            
+          </View>
+        
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
